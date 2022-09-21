@@ -487,7 +487,7 @@ where
             return None;
         }
 
-        cmp::max(outer_hint, inner_hint)
+        Some(cmp::max(outer_hint?, inner_hint?))
     }
 }
 

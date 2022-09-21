@@ -1,7 +1,11 @@
 #![cfg(feature = "registry")]
-use tracing::level_filters::LevelFilter;
-use tracing::Subscriber;
+use tracing_core::{
+    span::{Attributes, Id, Record},
+    subscriber::Interest,
+    Event, LevelFilter, Metadata, Subscriber,
+};
 use tracing_subscriber::prelude::*;
+use tracing_subscriber::{layer, prelude::*, reload::*};
 
 // This test is just used to compare to the tests below
 #[test]
@@ -25,6 +29,30 @@ fn subscriber_and_option_none_layer() {
         .with(LevelFilter::ERROR)
         .with(None::<LevelFilter>);
     assert_eq!(subscriber.max_level_hint(), Some(LevelFilter::ERROR));
+}
+
+struct Ugh;
+impl<S: Subscriber> tracing_subscriber::Layer<S> for Ugh {
+    fn register_callsite(&self, m: &Metadata<'_>) -> Interest {
+        Interest::sometimes()
+    }
+
+    fn enabled(&self, m: &Metadata<'_>, _: layer::Context<'_, S>) -> bool {
+        true
+    }
+
+    fn max_level_hint(&self) -> Option<LevelFilter> {
+        None
+    }
+}
+
+#[test]
+fn gus() {
+    // None means the other layer takes control
+    let subscriber = tracing_subscriber::registry()
+        .with(Ugh)
+        .with(None::<LevelFilter>);
+    assert_eq!(subscriber.max_level_hint(), None);
 }
 
 #[test]

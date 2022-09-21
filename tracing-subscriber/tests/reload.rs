@@ -30,6 +30,9 @@ impl Subscriber for NopSubscriber {
     fn event(&self, _: &Event<'_>) {}
     fn enter(&self, _: &Id) {}
     fn exit(&self, _: &Id) {}
+    fn max_level_hint(&self) -> Option<LevelFilter> {
+        Some(LevelFilter::OFF)
+    }
 }
 
 #[test]
